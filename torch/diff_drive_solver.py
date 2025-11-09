@@ -86,7 +86,7 @@ class DiffDriveSolver(SCPSolver):
     def initialize_trajectory(self, n: int, m: int):
         super().initialize_trajectory(n, m)
         # not a good idea. this will generally be infeasible - and it is not
-        # necessarily easy for cvxpy to rescue itself from trajectories inside
-        # of obstacles - or off the map!
+        # easy for cvxpy to rescue itself from trajectories that go
+        # off the map!
         # for i in range(self.u_init.shape[0]):
         #     self.u_init[i,:] = self.u_goal

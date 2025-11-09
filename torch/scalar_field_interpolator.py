@@ -1,9 +1,8 @@
 # pytorch signed distance function
+# emitted by GPT5 and simplified/cleaned up
+
 import torch
-import torch.nn.functional as F
 import numpy as np
-from torch.func import jacfwd, jacrev, vmap
-import matplotlib.pyplot as plt
 from scipy.ndimage import distance_transform_edt as edt
 from scipy.ndimage import gaussian_filter
 
@@ -52,11 +51,10 @@ class ScalarFieldInterpolator:
     
     def bilinear_sample(self,
         xy: torch.Tensor,
-        align_corners: bool = True,
         padding_mode: str = "border",
     ) -> torch.Tensor:
         """
-        Returns values at xy_norm: (T,) normalized to [-1,1]
+        Returns values at xy: (T,) in coordinates defined by origin and resolution
         Works with autograd (reverse and forward AD).
         """
         H, W = self.phi.shape
@@ -64,15 +62,6 @@ class ScalarFieldInterpolator:
         y = xy[:, 1]
         x_pix = (x - self.ox) / self.res
         y_pix = (y - self.oy) / self.res
-    
-        # # Map normalized [-1,1] -> pixel coords
-        # if align_corners:
-        #     x_pix = (x + 1) * 0.5 * (W - 1)
-        #     y_pix = (y + 1) * 0.5 * (H - 1)
-        # else:
-        #     # same rule as grid_sample for align_corners=False
-        #     x_pix = (x + 1) * W * 0.5 - 0.5
-        #     y_pix = (y + 1) * H * 0.5 - 0.5
     
         # corners
         x0 = torch.floor(x_pix).to(torch.long)
@@ -133,6 +122,8 @@ class ScalarFieldInterpolator:
         else:
             raise ValueError("padding_mode must be 'border' or 'zeros'")
 
+    # not used, but left around to help in case gpt5 has built in some
+    # sort of bug I am not expecting
     def world_to_norm_xy(self, x, y, H, W, ox, oy, res, flip_y=True, align_corners=True):
         # map world meters -> pixel -> normalized [-1,1]
         x_pix = (x - ox) / res
@@ -148,9 +139,6 @@ class ScalarFieldInterpolator:
         return torch.stack([x_norm, y_norm], dim=-1)  # (...,2)
 
     def interpolator(self, s: torch.Tensor, u: torch.Tensor) -> torch.Tensor:
-        # s: (4,), u: (1,) — use s[:2] = (x,y). If already normalized, skip the mapping.
-        xy = s[:2]  # if already in [-1,1]
-        # or: xy_norm = self.world_to_norm_xy(s[0], s[1], H, W, ox, oy, res)
-
-        val = self.bilinear_sample(xy[None, :], align_corners=True, padding_mode="border")
+        xy = s[:2]
+        val = self.bilinear_sample(xy[None, :], padding_mode="border")
         return val  # scalar ()

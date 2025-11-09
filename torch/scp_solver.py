@@ -1,6 +1,6 @@
 """
 This code generalizes/optimizes sequential convex programming (SCP) as espoused by the
-Autonomous Systems Lab (ASL), Stanford University. CVXPY is the solver
+Autonomous Systems Lab (ASL), Stanford University (e.g., AA203). CVXPY is the solver
 and pytorch is utilized for in-process compatibility with other machine learning needs.
 This is most certainly not the fastest way to get a solution, but you don't have to
 compute a jacobian and the optimization problem definition is very clean. Particular
