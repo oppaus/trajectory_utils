@@ -40,6 +40,7 @@ class DiffDriveSolver(SCPSolver):
         #objective += cvx.sum(self.slack_obs)
         constraints = [self.s_cvx[i + 1] == self.c_param[i] + self.A_param[i] @ self.s_cvx[i] +
                        self.B_param[i] @ self.u_cvx[i] for i in range(self.N)]
+        # note this does not enforce initial robot heading, only position
         constraints += [self.s_cvx[0,:2] == self.s0[:2]]
         constraints += [self.u_cvx[self.N-1] == self.u_final]
         constraints += [cvx.abs(self.u_cvx) <= self.u_max]

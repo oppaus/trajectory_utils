@@ -6,7 +6,7 @@ This is most certainly not the fastest way to get a solution, but you don't have
 compute a jacobian and the optimization problem definition is very clean. Particular
 solvers are subclasses of this class - which implement the virtual methods for objectives
 and constraints. A useful addition would be an adaptive trust region. The adaptive
-trust region seems to depend a bit on the problem being solved.
+trust region details depend on the problem being solved.
 """
 
 import cvxpy as cvx
