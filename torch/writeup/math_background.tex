@@ -1,0 +1,142 @@
+\documentclass[twoside,11pt]{article}
+
+\usepackage{aa228-jmlr2e}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{cleveref}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\usepackage{enumitem}
+
+\setlist[itemize]{noitemsep}  % or \setlist[itemize]{itemsep=0pt, topsep=0pt}
+
+\begin{document}
+
+\title{\texttt{trajectory\_utils}: Mathematical background}
+
+
+%===========================================
+\name{Stuart Johnson}
+\email{stuart.g.johnson@gmail.com}
+
+\maketitle
+
+\tableofcontents
+
+\section{Cartpoles}
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{0.6\textwidth} % adjust width to taste
+  \centering
+\begin{tikzpicture}[scale=1.2, >=stealth]
+
+  % Parameters
+  \def\cartW{0.6}     % cart width
+  \def\cartH{0.6}     % cart height
+  \def\L{2.0}         % pole length
+  \def\thdeg{25}      % pole angle from downward vertical (for illustration)
+  \def\roff{0.1}
+
+  % Cart center & pivot
+  \coordinate (cartcenter) at (0,0);
+  \coordinate (pivot) at ($(cartcenter)+(0,\cartH/2)$);
+  \coordinate (poleend) at ($(pivot)+({\L*sin(\thdeg)}, {-\L*cos(\thdeg)})$);
+
+  % Cart (small box)
+  \draw[thick]
+    ($(cartcenter)+(-\cartW/2,0)$) rectangle
+    ($(cartcenter)+(\cartW/2,\cartH)$);
+
+  % Axes from the pivot
+  \draw[->] (pivot) -- ++(0.8,0) node[anchor=west] {$x$};
+  \draw[->] (pivot) -- ++(0,0.8) node[anchor=south] {$y$};
+
+  % Downward vertical from pivot (reference)
+  \draw[dashed] (pivot) -- ++(0,-1.6);
+
+  % Pole: angle measured from negative vertical toward positive x
+  % So direction = -90 + \thdeg degrees
+  \draw[line width=1.5pt]
+    (pivot) -- ++({\L*sin(\thdeg)}, {- \L*cos(\thdeg)});
+
+  % Mark angle theta at pivot (between downward vertical and pole)
+  \begin{scope}
+    \path (pivot) ++(0,-0.9) coordinate (downref);
+    \draw[->]
+      (pivot) ++(0,-0.7) arc[start angle=-90,
+                             end angle={-90+\thdeg},
+                             radius=0.7];
+    \node at ($(pivot)+(0.15,-0.9)$) {$\theta$};
+   
+  \end{scope}
+  
+  % an attempt at an offset r arrow by gpt5
+  
+    % ---- r arrow along the pole ----
+    % rstart: 10% along the pole from pivot
+    % rend:   ~67% along the pole from pivot
+    %\coordinate (rstartbase) at ($(pivot)!0.10!(poleend)$);
+    %\coordinate (rendbase)   at ($(pivot)!0.67!(poleend)$);
+    
+    % Offset both points by roff perpendicular to the pole
+    %\coordinate (rstart) at ($(rstartbase)!{\roff}!90:(poleend)$);
+    %\coordinate (rend)   at ($(rendbase)!{\roff}!90:(poleend)$);
+
+    % Break the arrow in the middle for the label
+    %\coordinate (rmid1) at ($(rstart)!0.45!(rend)$);
+    %\coordinate (rmid2) at ($(rstart)!0.55!(rend)$);
+
+    % Draw arrow segments along the pole
+    %\draw[->, dashed] (rstart) -- (rmid1);
+    %\draw[dashed] (rmid2) -- (rend);
+
+    % Label r centered in the gap
+    %\node[fill=white, inner sep=1pt] at ($(rstart)!0.5!(rend)$) {$r$};
+ 
+
+\end{tikzpicture}
+\caption{\small Cart–pole system. The cart is actuated - by various means - and is constrained to move along $\pm x$. Objectives are to swing the pole up to vertical - and/or stabilize it there. The physical cart is actuated by a belt drive, and the pole is a steel rod.}
+\label{fig:cartpole-diagram}
+\end{minipage}
+\end{figure}
+
+\subsection{Equations of motion}
+
+By inspection, figure \ref{fig:cartpole-diagram} offers:
+
+\begin{align}
+x_r(t) = r sin(\theta(t)), r \in [0,L] \\
+y_r(t) = - r cos(\theta(t)), r \in [0,L] \\
+\dot{x_r}(t) = r cos(\theta(t)) \dot{\theta}(t) + \dot{x}(t), r \in [0,L] \\
+\dot{y_r}(t) = r sin(\theta(t)) \dot{\theta}(t), r \in [0,L]
+\end{align}
+
+where $r$ parameterizes the location of infinitesimal mass along the pole. It is straightforward to compute the Lagrangian $\mathcal{L} = T - V$ - the first step in deriving the equations of motion.
+
+
+\subsection{Cart force control}
+
+\subsection{Cart velocity servo control}
+
+\subsection{The \texttt{cvxpy} experience}
+
+\section{Differential Drive Control trajectories}
+
+\subsection{Signed Distance Function (SDF) for obstacle avoidance}
+
+\subsection{Differentiable SDF in pyTorch}
+
+\subsection{The \texttt{cvxpy} experience}
+
+% References
+\bibliography{references}
+
+
+\end{document}
+

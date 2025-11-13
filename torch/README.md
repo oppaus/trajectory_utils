@@ -51,6 +51,8 @@ SCP solvers define a subclass of SCPSolver. Current examples are CartpoleSolverV
 
 # Robot control trajectory solutions
 
+See [writeup/math_background.pdf](writeup/math_background.pdf) for more detail.
+
 When collecting data to observe sensor data (e.g., IMU and odometry) under robot actions, it would be useful to have a method to compute control trajectories which satisfy some nominal control strategy, but are also unlikely to cause the robot to collide with obstacles. Optimal control to the rescue! Code in:
 
 ```
@@ -70,6 +72,8 @@ An overlay of the computed trajectory and the SDF is:
 <img src="diff_drive_traj.png" alt="diff_drive_traj.png" width="500"/>
 
 # Cartpole solutions
+
+See [writeup/math_background.pdf](writeup/math_background.pdf) for more detail.
 
 Solutions for the "swing-up" of a cartpole from a stationary unmoving pendulum are shown below. These solutions model a cartpole system where the pendulum is a rod attached to a pivot in the center of a belt-driven "cart". (More details to come). This system differs somewhat from typical textbook examples where the pendulum mass is concentrated at the end of the pendulum.
 
