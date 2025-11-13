@@ -105,7 +105,8 @@ class SCPSolver:
         self.prob = self.opt_problem()
         self.fd = self.build_fd_ode(self.dt)
 
-    def linearize(self, f: Callable, s_np: np.ndarray, u_np: np.ndarray):
+    def linearize(self, f: Callable, s_np: np.ndarray, u_np: np.ndarray) ->\
+            Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         f: torch function (s,u) -> y  (supports batching on leading dim)
         s_np: [n] or [T,n]  numpy
@@ -156,7 +157,7 @@ class SCPSolver:
         self.s_init = np.zeros((self.N + 1, n))
         self.s_init[0] = self.s0
 
-    def solve(self, eps: float, max_iters: int):
+    def solve(self, eps: float, max_iters: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
         """Solve over the time horizon via SCP.
 
         Arguments
@@ -174,6 +175,8 @@ class SCPSolver:
             u[k] is the control at time step k
         J : numpy.ndarray
             J[i] is the SCP cost after the i-th solver iteration
+        conv: bool
+            convergence state
         """
         n = self.Q.shape[0]  # state dimension
         m = self.R.shape[0]  # control dimension
@@ -210,7 +213,7 @@ class SCPSolver:
         print(f"Solve time: {elapsed_time:.4f} seconds")
         return s, u, J, converged
 
-    def discretize(self, f:Callable, dt: float):
+    def discretize(self, f:Callable, dt: float) -> Callable:
         """
         f: (s, u) -> ds/dt   (both torch tensors; supports batching)
         returns fd(s,u) that maps to next state with Runge-Kutta 4th order integration.
@@ -226,7 +229,7 @@ class SCPSolver:
             return s + (k1 + 2*k2 + 2*k3 + k4) / 6.0
         return integrator
 
-    def build_fd_ode(self, dt: float):
+    def build_fd_ode(self, dt: float) -> Callable:
         return self.discretize(self.ode, dt)
 
     def rollout(self, s: np.ndarray, u: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
