@@ -49,7 +49,11 @@ def main():
     N = t.size - 1
 
     solver = CartpoleSolverVelocity(N, dt, P, Q, R, u_max, rho, s_goal, s0, s_max, cart_mass, pole_length, pole_mass, cart_tau)
+    solver.initialize_trajectory()
     s, u, J, conv = solver.solve(eps, max_iters)
+
+    # save pre-rollout solution
+    np.savez("cartpole_vctrl.npz",  s=s, u=u)
 
     print("SCP convergence: " + str(conv))
 

@@ -8,6 +8,7 @@ solvers are subclasses of this class - which implement the virtual methods for o
 and constraints. A useful addition would be an adaptive trust region. The adaptive
 trust region details depend on the problem being solved.
 """
+from copy import deepcopy
 
 import cvxpy as cvx
 import torch
@@ -151,11 +152,20 @@ class SCPSolver:
     def linearize_constraints(self, s: np.ndarray, u: np.ndarray):
         pass
 
-    def initialize_trajectory(self, n: int, m: int):
+    def initialize_trajectory(self):
+        """Set and rollout the zero control trajectory."""
+        n = self.Q.shape[0]  # state dimension
+        m = self.R.shape[0]  # control dimension
         # the zero control trajectory
         self.u_init = np.zeros((self.N, m))
         self.s_init = np.zeros((self.N + 1, n))
         self.s_init[0] = self.s0
+        self.s_init, self.u_init = self.rollout(self.s_init, self.u_init)
+
+    def set_trajectory(self, s_init, u_init):
+        """simply set the trajectory."""
+        self.s_init = s_init
+        self.u_init = u_init
 
     def solve(self, eps: float, max_iters: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
         """Solve over the time horizon via SCP.
@@ -178,12 +188,10 @@ class SCPSolver:
         conv: bool
             convergence state
         """
-        n = self.Q.shape[0]  # state dimension
-        m = self.R.shape[0]  # control dimension
 
         # Initialize trajectory
-        self.initialize_trajectory(n, m)
-        s, u = self.rollout(self.s_init, self.u_init)
+        s = deepcopy(self.s_init)
+        u = deepcopy(self.u_init)
 
         # SCP solve loop
         converged = False
@@ -195,7 +203,7 @@ class SCPSolver:
             self.linearize_constraints(s, u)
             self.s_prev_param.value = s
             self.u_prev_param.value = u
-            self.prob.solve(solver=cvx.SCS, warm_start=True, eps=1e-3, max_iters=20000)
+            self.prob.solve(solver=cvx.SCS, warm_start=True, eps=1e-3, max_iters=30000)
             if self.prob.status != "optimal":
                 print("SCP solve failed. CVXPY problem status: " + self.prob.status)
                 break

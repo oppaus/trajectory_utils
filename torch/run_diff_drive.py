@@ -58,6 +58,7 @@ def main():
     N = t.size - 1
 
     solver = DiffDriveSolver(N, dt, P, Q, R, u_max, rho, s_goal, s0, u_goal, u_min, sdf, u_final, rho_u)
+    solver.initialize_trajectory()
     s, u, J, conv = solver.solve(eps, max_iters)
 
     print("SCP convergence: " + str(conv))

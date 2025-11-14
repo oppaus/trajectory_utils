@@ -84,8 +84,8 @@ class DiffDriveSolver(SCPSolver):
             self.B_param_sdf[i2].value = B[i2]
             self.c_param_sdf[i2].value = c[i2]
 
-    def initialize_trajectory(self, n: int, m: int):
-        super().initialize_trajectory(n, m)
+    def initialize_trajectory(self):
+        super().initialize_trajectory()
         # not a good idea. this will generally be infeasible - and it is not
         # easy for cvxpy to rescue itself from trajectories that go
         # off the map!
