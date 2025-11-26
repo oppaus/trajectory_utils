@@ -36,8 +36,7 @@ def worker(trial_range: range, worker_num: int):
                               u_max=np.array([0.8]),
                               s_max=np.array([0.44 / 2.0, 1000, 0.8, 1000])[None, :])
 
-    n_gen = 100
-    tdir = "trajectories_test5"
+    tdir = "trajectories_test6"
     os.makedirs(tdir, exist_ok=True)
 
     # goal state: pole upright

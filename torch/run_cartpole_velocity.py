@@ -36,7 +36,7 @@ def main():
     # goal state: pole upright
     s_goal = np.array([0.0, np.pi, 0.0, 0.0])
     # start state: pole down-ish
-    s0 = np.array([0.00, 0.0, 0.0, 0.0])
+    s0 = np.array([0.0, 0.0, 0.0, 0.0])
 
     scenario= TrajectoryScenario(s_goal=s_goal, s0=s0,t0=0.0, T=3.5)
 

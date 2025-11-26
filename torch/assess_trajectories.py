@@ -8,7 +8,7 @@ import pickle
 import os
 
 def main():
-    tdir = "trajectories_test5"
+    tdir = "trajectories_test6"
     good_data = 0
     num_data = 0
     for file in os.listdir(tdir):

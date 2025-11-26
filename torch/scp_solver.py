@@ -93,19 +93,24 @@ class SCPSolver:
         self.s0 = s0
         self.s_goal = s_goal
         self.N = N
-        self.s0 = s0
-        self.s_goal = s_goal
+        self.reset_core()
+
+    def reset_core(self):
+        """
+            Run the core reset of the optimization problem.
+            Be sure all your class variables are set up.
+        """
         n = self.params.Q.shape[0]
         m = self.params.R.shape[0]
         # declare all optimization parameters and variables
         # this speeds up CVXPY solves by a factor of 5 or more.
-        self.s_cvx = cvx.Variable((N + 1, n))
-        self.u_cvx = cvx.Variable((N, m))
-        self.A_param = [cvx.Parameter((n, n)) for _ in range(N)]
-        self.B_param = [cvx.Parameter((n, m)) for _ in range(N)]
-        self.c_param = [cvx.Parameter(n) for _ in range(N)]
-        self.s_prev_param = cvx.Parameter((N + 1, n))
-        self.u_prev_param = cvx.Parameter((N, m))
+        self.s_cvx = cvx.Variable((self.N + 1, n))
+        self.u_cvx = cvx.Variable((self.N, m))
+        self.A_param = [cvx.Parameter((n, n)) for _ in range(self.N)]
+        self.B_param = [cvx.Parameter((n, m)) for _ in range(self.N)]
+        self.c_param = [cvx.Parameter(n) for _ in range(self.N)]
+        self.s_prev_param = cvx.Parameter((self.N + 1, n))
+        self.u_prev_param = cvx.Parameter((self.N, m))
         self.prob = self.opt_problem()
 
     def linearize(self, f: Callable, s_np: np.ndarray, u_np: np.ndarray) ->\

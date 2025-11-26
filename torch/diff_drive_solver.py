@@ -1,11 +1,12 @@
 """
 Differential drive robot control trajectory planner.
 """
-from scp_solver import SCPSolver
+from scp_solver import SCPSolver, SolverParams
 
 import cvxpy as cvx
 import torch
 import numpy as np
+from typing import Tuple, Callable, Any, List
 
 from scalar_field_interpolator import ScalarFieldInterpolator, SDF
 
@@ -15,24 +16,49 @@ class DiffDriveSolver(SCPSolver):
     u_min: np.ndarray
     u_final: np.ndarray
     rho_u: float
-    def __init__(self, N, dt, P, Q, R, u_max, rho, s_goal, s0, u_goal, u_min, sdf: SDF, u_final, rho_u):
-        super().__init__(N, dt, P, Q, R, u_max, rho, s_goal, s0)
-        self.u_goal = u_goal
+    # linearization variables
+    A_param_sdf: List[cvx.Parameter]
+    B_param_sdf: List[cvx.Parameter]
+    c_param_sdf: List[cvx.Parameter]
+    slack_obs: cvx.Variable
+
+    def __init__(self, sp:SolverParams, u_min, sdf: SDF, rho_u):
+        super().__init__(sp=sp)
         self.u_min = u_min
-        self.u_final = u_final
         self.rho_u = rho_u
-        n = Q.shape[0]
-        m = R.shape[0]
-        self.A_param_sdf = [cvx.Parameter((1, n)) for _ in range(N+1)]
-        self.B_param_sdf = [cvx.Parameter((1, m)) for _ in range(N)]
-        self.c_param_sdf = [cvx.Parameter(1) for _ in range(N+1)]
-        self.slack_obs = cvx.Variable(self.N, nonneg=True)  # one slack per time
         self.setup_this(sdf)
 
     def setup_this(self, sdf: SDF):
         super().setup()
         # add the function for the sdf interpolator
         self.sdf_interpolator = ScalarFieldInterpolator(sdf.sdf, sdf.ox, sdf.oy, sdf.res)
+
+    def reset_custom(self, s0:np.ndarray, u_goal:np.ndarray, u_final:np.ndarray, N:int):
+        """
+        N : int
+            The time horizon (N * dt) of the solver.
+        u_goal : numpy.ndarray
+            The goal controls.
+        u_final : numpy.ndarray
+            The target control at the final state.
+        s0 : numpy.ndarray
+            The initial state.
+        """
+        # prepare for a new solve
+        self.s0 = s0
+        self.s_goal = np.array([])
+        self.N = N
+        self.s0 = s0
+        self.u_final = u_final
+        self.u_goal = u_goal
+        n = self.params.Q.shape[0]
+        m = self.params.R.shape[0]
+        # declare additional optimization parameters and variables
+        self.A_param_sdf = [cvx.Parameter((1, n)) for _ in range(self.N+1)]
+        self.B_param_sdf = [cvx.Parameter((1, m)) for _ in range(self.N)]
+        self.c_param_sdf = [cvx.Parameter(1) for _ in range(self.N+1)]
+        self.slack_obs = cvx.Variable(self.N, nonneg=True)  # one slack per time
+        self.reset_core()
 
     def opt_problem(self) -> cvx.Problem:
         # set up cvxpy optimization
@@ -43,12 +69,12 @@ class DiffDriveSolver(SCPSolver):
         # note this does not enforce initial robot heading, only position
         constraints += [self.s_cvx[0,:2] == self.s0[:2]]
         constraints += [self.u_cvx[self.N-1] == self.u_final]
-        constraints += [cvx.abs(self.u_cvx) <= self.u_max]
+        constraints += [cvx.abs(self.u_cvx) <= self.params.u_max]
         constraints += [self.u_cvx >= self.u_min]
         # obstacle avoidance
         #constraints += [self.c_param_sdf[i] + self.A_param_sdf[i] @ self.s_cvx[i] + self.slack_obs[i] >= 0.0 for i in range(1, self.N)]
         constraints += [self.c_param_sdf[i] + self.A_param_sdf[i] @ self.s_cvx[i] >= 0.0 for i in range(1, self.N)]
-        constraints += [cvx.max(cvx.abs(self.s_cvx - self.s_prev_param)) <= self.rho]
+        constraints += [cvx.max(cvx.abs(self.s_cvx - self.s_prev_param)) <= self.params.rho]
         constraints += [cvx.max(cvx.abs(self.u_cvx - self.u_prev_param)) <= self.rho_u]
 
         prob = cvx.Problem(cvx.Minimize(objective), constraints)
@@ -56,12 +82,12 @@ class DiffDriveSolver(SCPSolver):
 
     def opt_problem_objective(self, s: cvx.Expression, u: cvx.Expression) -> cvx.Expression:
         """ The objective function of the problem to solve. Used for adaptive trust region. In cvxpy-speak."""
-        objective = cvx.sum([cvx.quad_form(self.u_cvx[i] - self.u_goal, self.R) for i in range(self.N)])
+        objective = cvx.sum([cvx.quad_form(self.u_cvx[i] - self.u_goal, self.params.R) for i in range(self.N)])
         return objective
 
     def ode(self, s: torch.Tensor, u: torch.Tensor) -> torch.Tensor:
         """
-        s: [..., 6]  (x, y, θ, dx, dy)
+        s: [..., 3]  (x, y, θ)
         u: [..., 2]  (v, omega)
         returns ds/dt with shape [..., 4]
         """

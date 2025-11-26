@@ -17,7 +17,7 @@ class CartpoleSolverVelocity(SCPSolver):
         super().__init__(sp)
         self.ep = ep
         self.g = 9.81
-        self.cartpole_energy = CartpoleEnergy(ep)
+        self.energy = CartpoleEnergy(ep)
         self.setup()
 
     def opt_problem(self) -> cvx.Problem:

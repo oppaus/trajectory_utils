@@ -2,8 +2,7 @@
 Differential drive robot control trajectory planner.
 """
 
-from diff_drive_solver import DiffDriveSolver
-
+from diff_drive_solver import DiffDriveSolver, SolverParams
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,36 +29,33 @@ def main():
     m = 2
     # start state: robot centered in the room, not moving
     s0 = np.array([0.0, 0.0, 0.0])
-    # state goal: not used here
-    s_goal = np.array([0.0, 0.0, 0.0])
     # control goal: the real target
     u_goal = np.array([0.3, 0.3])
     # control final: not moving
     u_final = np.array([0.0, 0.0])
-    dt = 0.1
     T = 30.0
-    # terminal control cost
-    P = 1.0 * np.eye(m)
-    # state cost = don't care for this problem
-    Q = np.eye(n)
-    # control cost
-    R = 1.0 * np.eye(m)
-    rho = 0.05  # trust region size - state
+
     rho_u = 0.02 # trust region size - control
-    u_max = np.array([max_robot_v, max_robot_omega])[None,:]
     u_min = np.array([0.0, -100.0])[None,:]
-    # convergence tolerance
-    eps = 0.001
-    # maximum SCP iterations
-    max_iters = 10000
-    animate = False  # flag for animation
+    dt = 0.1
+    solver_params = SolverParams(dt=dt,
+                              P=1.0 * np.eye(n),
+                              Q=np.eye(n),
+                              R=np.eye(m),
+                              rho=0.05,
+                              eps=0.001,
+                              max_iters=10000,
+                              u_max=np.array([max_robot_v, max_robot_omega])[None,:],
+                              s_max=np.array([]))
 
     t = np.arange(0.0, T + dt, dt)
     N = t.size - 1
 
-    solver = DiffDriveSolver(N, dt, P, Q, R, u_max, rho, s_goal, s0, u_goal, u_min, sdf, u_final, rho_u)
+    solver = DiffDriveSolver(sp=solver_params, u_min=u_min, sdf=sdf, rho_u=rho_u)
+    solver.reset_custom(s0, u_goal, u_final, N)
     solver.initialize_trajectory()
-    s, u, J, conv = solver.solve(eps, max_iters)
+
+    s, u, J, conv, status = solver.solve()
 
     print("SCP convergence: " + str(conv))
 
@@ -80,8 +76,8 @@ def main():
         ax[row, col].set_ylabel(labels_s[i])
     for i in range(m):
         ax[1, i].plot(t[:-1], u[:, i])
-        ax[1, i].axhline(u_max[:,i], linestyle="--", color="tab:orange")
-        ax[1, i].axhline(-u_max[:,i], linestyle="--", color="tab:orange")
+        ax[1, i].axhline(solver_params.u_max[:,i], linestyle="--", color="tab:orange")
+        ax[1, i].axhline(-solver_params.u_max[:,i], linestyle="--", color="tab:orange")
         ax[1, i].set_xlabel(r"$t$")
         ax[1, i].set_ylabel(labels_u[i])
     ax[1, 2].plot(s[:,0], s[:, 1])
