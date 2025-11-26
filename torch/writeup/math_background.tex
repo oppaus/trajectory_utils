@@ -101,7 +101,7 @@
  
 
 \end{tikzpicture}
-\caption{\small Cart–pole system. The cart is actuated - by various means - and is constrained to move along $\pm x$. Objectives are to swing the pole up to vertical - and/or stabilize it there. The physical cart is actuated by a belt drive, and the pole is a steel rod.}
+\caption{\small Cart–pole system. The cart is actuated by some means and is constrained to move along $\pm x$. Objectives are to swing the pole up to vertical - and/or stabilize it there. The physical cart is actuated by a belt drive, and the pole is a steel rod.}
 \label{fig:cartpole-diagram}
 \end{minipage}
 \end{figure}
@@ -111,13 +111,52 @@
 By inspection, figure \ref{fig:cartpole-diagram} offers:
 
 \begin{align}
-x_r(t) = r sin(\theta(t)), r \in [0,L] \\
-y_r(t) = - r cos(\theta(t)), r \in [0,L] \\
-\dot{x_r}(t) = r cos(\theta(t)) \dot{\theta}(t) + \dot{x}(t), r \in [0,L] \\
-\dot{y_r}(t) = r sin(\theta(t)) \dot{\theta}(t), r \in [0,L]
+x_r(t) = r sin\theta(t), r \in [0,L] \\
+y_r(t) = - r cos\theta(t), r \in [0,L] \\
+\dot{x_r}(t) = r cos\theta(t) \dot{\theta}(t) + \dot{x}(t), r \in [0,L] \\
+\dot{y_r}(t) = r sin\theta(t) \dot{\theta}(t), r \in [0,L]
 \end{align}
 
 where $r$ parameterizes the location of infinitesimal mass along the pole. It is straightforward to compute the Lagrangian $\mathcal{L} = T - V$ - the first step in deriving the equations of motion.
+
+The kinetic energy $T$ can be written as a sum of the cart kinetic energy and an integral over the pole:
+
+\begin{equation}
+T = \int_{r=0}^{r=L} (\dot{x}_r^2 + \dot{y}_r^2) \rho dr + \frac{1}{2} m_c \dot{x}^2
+\end{equation}
+
+where $\rho$ is the pole mass per unit length. A bit of algebra yields:
+
+\begin{equation}
+T = m_p \frac{L^2}{6} \dot{\theta}^2 + \frac{1}{2}m_p L \cos{\theta} \dot{\theta} \dot{x} + \frac{1}{2} \left(m_p + m_c\right) \dot{x}^2
+\end{equation}
+
+where we have used the fact that $\rho L = m_p$.
+
+The (gravitational) potential energy of the cart does not change, so we are left with an integral over the pole:
+
+\begin{equation}
+V = g \int_{r=0}^{r=L} y_r \rho dr
+\end{equation}
+
+or, equivalently, the potential energy of a mass concentrated at the pole's center of mass:
+
+\begin{equation}
+V = - \frac{g m_p L}{2} \cos{\theta}
+\end{equation}
+
+Euler-Lagrange now yields two equations:
+
+\begin{equation}
+\frac{d}{dt} \left(\frac{\partial \mathcal{L}}{\partial \dot{x}} \right) - \frac{\partial \mathcal{L}}{\partial x} = F_x
+\end{equation}
+
+\begin{equation}
+\frac{d}{dt} \left(\frac{\partial \mathcal{L}}{\partial \dot{\theta}} \right) - \frac{\partial \mathcal{L}}{\partial \theta} = 0
+\end{equation}
+
+By substitution of expressions for $T$ and $V$, and some algebra, this yields:
+
 
 
 \subsection{Cart force control}
