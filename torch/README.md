@@ -100,3 +100,33 @@ Minimized cost, states and actions computed by this script are:
 An animation of the cartpole is:
 
 <img src="cartpole_velocity.gif" alt="cartpole_velocity.gif" width="500"/>
+
+## Cart Neural Network control
+
+One of the intents of this work is to train a neural network to reproduce the wisdom of the trajectory solvers. A first cut at this is implemented in:
+
+```
+generate_trajectories.py
+assess_trajectories.py
+trajectory_loader.py
+train.py
+predict.py
+```
+
+The current training process DOES NOT YET include expert trajectories based on rollouts of the model being trained (a la, DAgger, for example). Also, I have not tuned the model, the datasets, etc. First cut!
+
+The training curves (red is training, green is validation) from an 80/20 split:
+
+<img src="nn_test_1_learning_curves.png" alt="nn_test_1_learning_curves.png" width="500"/>
+
+This data was generated from random, stationary starts of the pendulum in the range of +/- 45 degrees from pointing down. The velocity servo model of the cartpole was used, and 4096 3.5 second swingups were solved for.
+
+The states of a rollout of the trained policy:
+
+<img src="nn_test_1_state.png" alt="nn_test_1_state.png" width="500"/>
+
+And, finally, the movie:
+
+<img src="nn_test_1.gif" alt="nn_test_1.gif" width="500"/>
+
+Presumably, accumulated prediction error is making this early NN controller perform poorly. Stay tuned!
