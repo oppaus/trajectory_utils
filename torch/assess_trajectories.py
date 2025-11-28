@@ -27,7 +27,7 @@ def main(tdir: str):
                 plot_trajectory(solver_params=sp, env_params=ep,
                                  traj=traj, filename_base="",
                                  animate=False)
-    print(good_data/num_data)
+    print(good_data, num_data, good_data/num_data)
 
 if __name__ == "__main__":
     main("trajectories_big_1")

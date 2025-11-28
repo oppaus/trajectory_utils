@@ -115,11 +115,11 @@ predict.py
 
 The current training process DOES NOT YET include expert trajectories based on rollouts of the model being trained (a la, DAgger, for example). Also, I have not tuned the model, the datasets, etc. First cut!
 
-The training curves (red is training, green is validation) from an 80/20 split:
+The learning curves (red is training, green is validation) from an 80/20 data split:
 
-<img src="nn_test_1_learning_curves.png" alt="nn_test_1_learning_curves.png" width="500"/>
+<img src="nn_test_3_learning_curves.png" alt="nn_test_3_learning_curves.png" width="500"/>
 
-This data was generated from random, stationary starts of the pendulum in the range of +/- 45 degrees from pointing down. The velocity servo model of the cartpole was used, and 4096 3.5 second swingups were solved for.
+This data was generated from random, stationary starts of the pendulum in the range of +/- 45 degrees from pointing down. The velocity servo model of the cartpole was used, whereby 3598 3.5 second swingups were solved for successfully.
 
 The states of a rollout of the trained policy:
 
