@@ -106,7 +106,7 @@ An animation of the cartpole is:
 
 ## Cart Neural Network control
 
-One of the intents of this work is to train a neural network to reproduce the wisdom of the trajectory solvers. A first cut at this is implemented in:
+One of the intents of this work is to train a neural network to reproduce the wisdom of the trajectory solvers. Then, we make these networks run really fast (more to come). A typical pytorch/cvxpy solve requires at least 20-30 seconds - so could only be used to produce open-loop control trajectories. A first cut at imitation (supervised) learning of the controller is implemented in:
 
 ```
 generate_trajectories.py
