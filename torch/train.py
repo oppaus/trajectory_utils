@@ -26,7 +26,12 @@ def eval_loss(model: nn.Sequential, loader: DataLoader, loss_fn, device):
             n_samples += batch_size
     return total_loss / n_samples
 
-def train(dname: str):
+def train(dname: str, restart_epoch: int = -1):
+    """
+    dname: directory name for training
+    restart_epoch: if > 0, used to reload
+        previous model weights and continue training
+    """
     # load data into dataset
     fname = dname + ".npz"
     data = np.load(fname)
@@ -73,21 +78,32 @@ def train(dname: str):
         nn.Linear(hidden_dim, output_dim)
     )
 
+    train_dir = os.path.join("train",dname)
+    os.makedirs(train_dir, exist_ok=True)
+
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    if restart_epoch > 0:
+        fname = dname + "_" + str(restart_epoch) + ".pth"
+        fpath = os.path.join(train_dir, fname)
+        ckpt = torch.load(fpath, map_location="cpu")
+        model.load_state_dict(ckpt["model_state"])
+        optimizer.load_state_dict(ckpt["optimizer_state"])
+        restart_epoch = restart_epoch + 1
+    else:
+        restart_epoch = 0
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    num_epochs = 200
+    num_epochs = 400
 
     train_loss_vec = []
     val_loss_vec = []
     epoch_vec = []
 
-    train_dir = os.path.join("train",dname)
-    os.makedirs(train_dir, exist_ok=True)
-
-    for epoch in range(num_epochs):
+    for epoch in range(restart_epoch, restart_epoch + num_epochs):
         model.train()
         for xb, yb in train_loader:
             xb = xb.to(device)
@@ -101,6 +117,7 @@ def train(dname: str):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
 
         if epoch % 5 == 0:
             train_loss = eval_loss(model, train_loader, loss_fn, device)
@@ -116,11 +133,12 @@ def train(dname: str):
             val_loss_vec.append(val_loss)
             epoch_vec.append(epoch)
             checkpoint = {"model_state": model.state_dict(),
+                          "optimizer_state": optimizer.state_dict(),
                           "input_dim": input_dim,
                           "output_dim": output_dim,
                           "hidden_dim": hidden_dim,
                           "dropout_rate": dropout_rate}
-            cname = dname + "_" + str(epoch) + ".pth"
+            cname = dname + "_" + str(restart_epoch) + "_" + str(epoch) + ".pth"
             cpath = os.path.join(train_dir, cname)
             torch.save(checkpoint, cpath)
 
@@ -129,9 +147,10 @@ def train(dname: str):
     plt.plot(epoch_vec, val_loss_vec, 'g')
     plt.xlabel("Epoch")
     plt.ylabel("Loss (MSE)")
-    lcname = os.path.join(train_dir, "learning_curves.png")
+    fname = "learning_curves_" + str(restart_epoch) + ".png"
+    lcname = os.path.join(train_dir, fname)
     plt.savefig(lcname)
     plt.show()
 
 if __name__ == "__main__":
-    train("trajectories_big_1")
+    train(dname="trajectories_big_1", restart_epoch=0)

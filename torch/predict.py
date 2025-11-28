@@ -34,7 +34,7 @@ def to_nn_action(u: np.ndarray, norm: float) -> np.ndarray:
 def from_nn_action(u: np.ndarray, norm: float) -> np.ndarray:
     return u * norm
 
-def predict(trained_model_dir, trained_model_epoch, output_filename):
+def predict(trained_model_dir: str, trained_model_epoch: list, output_filename: str):
     # use limits from the trajectory solver for normalization
     state_normalization = [0.22, 1, 0.8, 5*np.pi]
     action_normalization = 0.8
@@ -73,7 +73,11 @@ def predict(trained_model_dir, trained_model_epoch, output_filename):
     tdir = trained_model_dir
     epoch_num = trained_model_epoch
     fdir = os.path.join("train",tdir)
-    fname = tdir + "_" + str(epoch_num) + ".pth"
+    epoch_str = ""
+    for sub_epoch in trained_model_epoch:
+        epoch_str += "_"
+        epoch_str += str(sub_epoch)
+    fname = tdir + epoch_str + ".pth"
     fpath = os.path.join(fdir, fname)
     ckpt = torch.load(fpath, map_location="cpu")
 
@@ -155,5 +159,5 @@ def predict(trained_model_dir, trained_model_epoch, output_filename):
 
 if __name__ == "__main__":
     predict(trained_model_dir="trajectories_big_1",
-            trained_model_epoch=195,
-            output_filename="nn_test_1")
+            trained_model_epoch=[0,375],
+            output_filename="nn_test_2")
