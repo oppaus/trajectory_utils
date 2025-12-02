@@ -58,6 +58,9 @@ ipython_config.py
 # pyflow
 __pypackages__/
 
+# Training
+train/
+
 # Environment
 .env
 .venv
