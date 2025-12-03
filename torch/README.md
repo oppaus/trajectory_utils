@@ -132,7 +132,7 @@ Then metrics:
 
 <img src="train/trajectories_big_1_32/metric_curves_0.png" alt="train/trajectories_big_1_32/metric_curves_0.png" width="500"/>
 
-The metrics indicate the challenge of training a NN controller by fitting flattened state-control pairs (more to come).
+The metrics are obtained by rolling out the initial conditions in the training set using the learned NN controller. The behavior of the metrics indicates the challenge of training a NN controller by fitting flattened state-control pairs (more to come).
 
 The  input data for this model training was generated from "expert" solves from random (but stationary) starts of the pendulum in the range of +/- 45 degrees from pointing down. The expert was the velocity servo model of the cartpole (see above). The resulting training data consists of 3598 3.5 second successful swingups.
 
