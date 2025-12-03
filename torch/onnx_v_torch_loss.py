@@ -31,9 +31,12 @@ class Modelizer(object):
         raise NotImplementedError("Oops! Naughty subclass must define.")
 
 class TorchModel(Modelizer):
-    # TODO: profile this method, very slow on first initialization 
+    # TODO: profile this method, very slow on first initialization, might just
+    # be torch loading for the first time, subsequents calls seem fine.
     def init(self):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # TODO: workaround, see other TODO in eval_loss function below
+        self.device = torch.device("cpu")
+        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         fpath = self.basepath + ".pth"
 
@@ -76,24 +79,23 @@ class OnnxModel(Modelizer):
         self.sess = ort.InferenceSession(fpath)
 
     def predict(self, states):
-        return self.sess.run(None,{'input': states.numpy()})
+        results = self.sess.run(None,{'input': states.numpy()})[0]
+        return torch.from_numpy(results)
 
-def eval_loss(model: nn.Sequential, loader: DataLoader, loss_fn, device):
+def eval_loss(model: Modelizer, loader: DataLoader, loss_fn):
     """Evaluate a model using the given loss function.
     """
-    model.eval()
     total_loss = 0.0
     n_samples = 0
-    with torch.no_grad():
-        for xb, yb in loader:
-            xb = xb.to(device)
-            yb = yb.to(device)
-            preds = model(xb)
-            loss = loss_fn(preds, yb)
-            # Weight by batch size to get dataset-wide mean later
-            batch_size = xb.size(0)
-            total_loss += loss.item() * batch_size
-            n_samples += batch_size
+    for xb, yb in loader:
+        preds = model.predict(xb)
+        # TODO: torch chokes if using GPU and yb isn't transferred there, fine
+        # in ONNXRuntime, short-term fix is to run torch inference on CPU
+        loss = loss_fn(preds, yb)
+        # Weight by batch size to get dataset-wide mean later
+        batch_size = xb.size(0)
+        total_loss += loss.item() * batch_size
+        n_samples += batch_size
     return total_loss / n_samples
 
 def load_training_data(fname: str) -> TensorDataset:
