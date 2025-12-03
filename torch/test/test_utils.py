@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import os
+import torch
 
 class MyTestCase(unittest.TestCase):
     def test_store_load(self):
@@ -39,7 +40,37 @@ class MyTestCase(unittest.TestCase):
         t = np.array([[1,1,1,1],[2,2,2,2]])
         print (t/norm)
 
+    def test_random(self):
+        uvec = np.array([0.0, np.pi / 4, 0.0, 0.0])
+        s0_batch = np.squeeze(np.random.uniform(-uvec, uvec, size=(128, 4)))
+        print(s0_batch.size)
 
+    def test_np_and(self):
+        #umm, per-element logical ops
+        a = np.array([True, False, True])
+        b = np.array([False, True, True])
+        c = np.array([True, False, True])
+        print(a & b & c)
+
+    def test_tensor_math(self):
+        t = np.array([[1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0]])
+        norm = [1.0, 2.0, 3.0, 4.0]
+        tt = torch.tensor(t)
+        print(t/norm)
+        print(tt/torch.tensor(norm))
+
+    def test_np_maximum(self):
+        t1 = np.array([[1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0], [3.0, 3.0, 3.0, 3.0]])
+        t2 = np.array([[1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0], [3.0, 3.0, 3.0, 3.0]])
+        t1d = t1+np.array([1.0, 1.0, 1.0, 1.0])
+        tm = np.maximum(t1d, t2)
+        print(tm)
+
+    def test_np_argmax(self):
+        # what type comes back from this thing?
+        t = np.array([[1.0, 2.0, 4.0, 8.0], [1.0, 2.0, 3.0, 4.0]])
+        tam = np.argmax(t)
+        print(tam)
 
 if __name__ == '__main__':
     unittest.main()

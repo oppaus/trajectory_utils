@@ -116,19 +116,34 @@ train.py
 predict.py
 ```
 
-The learning curves (red is training, green is validation) from an 80/20 data split:
+Training checkpoints are included for 32=bit and 64-bit pytorch models. See:
+```
+train/trajectories_big_1_32
+train/trajectories_big_1_64
+```
 
-<img src="nn_test_3_learning_curves.png" alt="nn_test_3_learning_curves.png" width="500"/>
+These are generated via obvious manipulations of the arguments to train() in ```train.py```.
 
-This data was generated from random, stationary starts of the pendulum in the range of +/- 45 degrees from pointing down. The velocity servo model of the cartpole was used to solve for 3598 3.5 second swingups.
+An example of learning curves (for the 32-bit model) from an 80/20 data split follows. First, loss:
 
-The states of a rollout of the trained policy:
+<img src="train/trajectories_big_1_32/learning_curves_0.png" alt="train/trajectories_big_1_32/learning_curves_0.png" width="500"/>
+
+Then metrics:
+
+<img src="train/trajectories_big_1_32/metric_curves_0.png" alt="train/trajectories_big_1_32/metric_curves_0.png" width="500"/>
+
+The metrics indicate the challenge of training a NN controller by fitting flattened state-control pairs (more to come).
+
+The  input data for this model training was generated from "expert" solves from random (but stationary) starts of the pendulum in the range of +/- 45 degrees from pointing down. The expert was the velocity servo model of the cartpole (see above). The resulting training data consists of 3598 3.5 second successful swingups.
+
+A median quality goal rollout from the "best" model (epoch 205) is:
 
 <img src="nn_test_3_state.png" alt="nn_test_3_state.png" width="500"/>
 
-And, finally, the movie:
+The animation of this rollout is:
 
 <img src="nn_test_3.gif" alt="nn_test_3.gif" width="500"/>
 
-For this test (more to come), the NN seems to have nailed the controller.
+For this test particular test, the NN seems to have nailed the controller. But, in general the model is insufficient. According to the metrics, only around 25% of the sampled trajectories satisfied limits on goals and constraints.
+
 The current training process DOES NOT YET include expert trajectories based on rollouts of the model being trained (_a la_ DAgger, for example). Also, I have not tuned the model, the datasets, etc. First cut!

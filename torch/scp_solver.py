@@ -18,7 +18,7 @@ from typing import Tuple, Callable, Any, List
 import time
 from dataclasses import dataclass
 
-torch.set_default_dtype(torch.float64)
+#torch.set_default_dtype(torch.float64)
 
 @dataclass
 class SolverParams:
