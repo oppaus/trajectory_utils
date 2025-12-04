@@ -38,7 +38,7 @@ def load_dataset(fname: str) -> Tuple[TensorDataset, TensorDataset, int, int]:
 
     print(x.shape, y.shape, z.shape)
 
-    # shuffle nn data before splitting into train and validation sets
+    # shuffle nn data to prevent trajectory ordering
     x, y = sklearn.utils.shuffle(x, y, random_state=42)
 
     input_dim = x.shape[1]
