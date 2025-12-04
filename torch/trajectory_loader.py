@@ -8,7 +8,7 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 
-def main(tdir: str):
+def main(tdir: str, update_npz:bool = True):
     good_data = 0
     num_data = 0
     training_split = 0.8 # so 20% for validation
@@ -51,37 +51,52 @@ def main(tdir: str):
     all_actions_training = np.concatenate(all_actions[0:training_cut], 0)
     all_s0_training = np.vstack(all_s0[0:training_cut])
     fname = tdir + "_training.npz"
-    np.savez(fname,first_array=all_states_training,
-             second_array=all_actions_training,
-             third_array=all_s0_training)
+    if update_npz:
+        np.savez(fname,first_array=all_states_training,
+                 second_array=all_actions_training,
+                 third_array=all_s0_training)
     all_states_val = np.concatenate(all_states[training_cut:-1],0)
     all_actions_val = np.concatenate(all_actions[training_cut:-1], 0)
     all_s0_val = np.vstack(all_s0[training_cut:-1])
     fname = tdir + "_validation.npz"
-    np.savez(fname,first_array=all_states_val,
-             second_array=all_actions_val,
-             third_array=all_s0_val)
+    if update_npz:
+        np.savez(fname,first_array=all_states_val,
+                 second_array=all_actions_val,
+                 third_array=all_s0_val)
 
     print(good_data/num_data)
-    plt.figure()
-    plt.plot(all_states_training,'+')
-    plt.show()
-    plt.figure()
-    plt.plot(all_actions_training,'+')
-    plt.show()
-    plt.figure()
-    plt.plot(all_s0_training[:,1],'+')
-    plt.show()
 
+    # these could be interesting
+    # plt.figure()
+    # plt.plot(all_states_training,'+')
+    # plt.show()
+    # plt.figure()
+    # plt.plot(all_actions_training,'+')
+    # plt.show()
+    # plt.figure()
+    # plt.plot(all_s0_training[:,1],'+')
+    # plt.show()
+    #
+    # plt.figure()
+    # plt.plot(all_states_val,'+')
+    # plt.show()
+    # plt.figure()
+    # plt.plot(all_actions_val,'+')
+    # plt.show()
+    # plt.figure()
+    # plt.plot(all_s0_val[:,1],'+')
+    # plt.show()
+
+    # probably more intereresting (bias in the training data)
     plt.figure()
-    plt.plot(all_states_val,'+')
-    plt.show()
-    plt.figure()
-    plt.plot(all_actions_val,'+')
-    plt.show()
-    plt.figure()
-    plt.plot(all_s0_val[:,1],'+')
+    plt.hist(all_states_training[:,1]*np.pi, bins=20)
+    #plt.plot(all_states_training[:,1],'+')
+    plt.xlabel("θ")
+    plt.ylabel("count")
+    plt.title("Training data sample histogram")
+    fname = tdir + "_theta_hist.png"
+    plt.savefig(fname)
     plt.show()
 
 if __name__ == "__main__":
-    main("trajectories_big_1")
+    main("trajectories_big_1", update_npz=True)
