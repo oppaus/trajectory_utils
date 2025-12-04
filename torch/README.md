@@ -74,7 +74,7 @@ An overlay of the computed trajectory and the SDF is:
 
 <img src="diff_drive_traj.png" alt="diff_drive_traj.png" width="500"/>
 
-# Cartpole solutions
+# SCP Cartpole solutions
 
 See [writeup/math_background.pdf](writeup/math_background.pdf) for more detail.
 
